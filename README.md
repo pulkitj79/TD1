@@ -211,9 +211,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-- **Developer**: [Your Name]
-- **Email**: your.email@example.com
-- **Project Link**: https://github.com/YOUR_USERNAME/tower-defense-game
+- **Developer**: Pulkit Jain
+- **Email**: developer.pulkit@gmail.com
+- **Project Link**: https://github.com/pulkitj79/TD1
 
 ---
 
