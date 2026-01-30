@@ -244,7 +244,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.89019614, g: 0.8470589, b: 0.5254902, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -269,7 +269,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 4.8
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -594,6 +594,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a4381c4dbd73734ba7e37201ee37e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
+  columns: 8
+  rows: 5
+  cellSize: 0.55
+  cellGap: 0.05
+  gridOrigin: {x: -2.2, y: -3.5}
+  leftMargin: 0.15
+  rightMargin: 0.15
+  topMargin: 0.1
+  bottomMargin: 0.1
+  cellPrefab: {fileID: 5594077501902994206, guid: c2de66061974c2c4e87e97e5b84d10cf, type: 3}
+  gridContainer: {fileID: 0}
 --- !u!4 &1596487503
 Transform:
   m_ObjectHideFlags: 0

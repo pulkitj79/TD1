@@ -17,9 +17,9 @@ MonoBehaviour:
   startingGold: 100
   startingSilver: 50
   gridConfig:
-    initialVisiblePercentage: 0.45
-    gridSize: {x: 10, y: 5}
-    cellBlockCost: 20
+    initialVisiblePercentage: 0.5
+    gridSize: {x: 8, y: 5}
+    cellBlockCost: 15
   waves: []
   sacredEssenceReward: 100
   nextChapter: {fileID: 0}
