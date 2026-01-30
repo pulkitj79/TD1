@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac36b639b668f8d4eb23f24005074628, type: 3}
+  m_Name: Chapter1
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterName: Tutorial Chapter
+  chapterDescription: Learn the basics
+  startingGold: 100
+  startingSilver: 50
+  gridConfig:
+    initialVisiblePercentage: 0.45
+    gridSize: {x: 10, y: 5}
+    cellBlockCost: 20
+  waves: []
+  sacredEssenceReward: 100
+  nextChapter: {fileID: 0}

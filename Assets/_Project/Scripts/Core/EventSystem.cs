@@ -26,6 +26,17 @@ public class EventSystem : MonoBehaviour
     // Dictionary to store event handlers for each event type
     private Dictionary<Type, Delegate> _eventHandlers = new Dictionary<Type, Delegate>();
 
+    private void Awake()
+    {
+        // Ensure only one instance exists
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        _instance = this;
+    }
+
     /// <summary>
     /// Subscribe to an event type
     /// </summary>
@@ -85,7 +96,47 @@ public class EventSystem : MonoBehaviour
     private void OnDestroy()
     {
         ClearAllEvents();
+        
+        if (_instance == this)
+        {
+            _instance = null;
+        }
     }
+
+    private void OnApplicationQuit()
+    {
+        // Clean up when application quits
+        ClearAllEvents();
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+    }
+
+#if UNITY_EDITOR
+    // This runs when exiting Play mode in the Unity Editor
+    [UnityEditor.InitializeOnLoadMethod]
+    private static void EditorCleanup()
+    {
+        UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+    }
+
+    private static void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
+    {
+        if (state == UnityEditor.PlayModeStateChange.ExitingPlayMode)
+        {
+            if (_instance != null)
+            {
+                _instance.ClearAllEvents();
+                if (_instance.gameObject != null)
+                {
+                    DestroyImmediate(_instance.gameObject);
+                }
+                _instance = null;
+            }
+        }
+    }
+#endif
 }
 
 /// <summary>
@@ -278,7 +329,7 @@ public struct XPGainedEvent : IGameEvent
 public struct LevelUpEvent : IGameEvent
 {
     public int NewLevel;
-    public BuffData[] AvailableBuffs; // 3 options to choose from
+    public BuffData[] AvailableBuffs;
 
     public LevelUpEvent(int level, BuffData[] buffs)
     {
@@ -304,10 +355,3 @@ public struct GameStateChangedEvent : IGameEvent
 }
 
 #endregion
-
-// Placeholder classes - these will be defined in their own files
-//public class Enemy { }
-//public class Soldier { }
-//public class Building { }
-//public class BuffData { }
-//public enum GameState { Preparation, Deployment, Battle, Resolution }
