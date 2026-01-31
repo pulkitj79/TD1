@@ -16,35 +16,38 @@ public class BuildingManager : MonoBehaviour
         Debug.Log("[BuildingManager] Initialized");
     }
     
-    public Building CreateBuilding(BuildingData data, Vector2Int gridPosition, int level = 1)
+public Building CreateBuilding(BuildingData data, Vector2Int gridPosition, int level = 1)
+{
+    if (data.prefab == null)
     {
-        if (data.prefab == null)
-        {
-            Debug.LogError($"[BuildingManager] No prefab for {data.buildingName}");
-            return null;
-        }
-        
-        // TODO: Get world position from GridManager
-        // Vector2 worldPos = GameManager.Instance.Grid.GetWorldPosition(gridPosition.x, gridPosition.y);
-        Vector2 worldPos = Vector2.zero; // Temporary
-        
-        GameObject buildingObj = Instantiate(data.prefab, worldPos, Quaternion.identity, buildingsContainer);
-        
-        Building building = buildingObj.GetComponent<Building>();
-        if (building == null)
-        {
-            Debug.LogError($"[BuildingManager] Prefab missing Building component");
-            return null;
-        }
-        
-        building.Initialize(data, gridPosition, level);
-        activeBuildings.Add(building);
-        
-        EventSystem.Instance.Trigger(new BuildingPlacedEvent(building, gridPosition));
-        
-        return building;
+        Debug.LogError($"[BuildingManager] No prefab for {data.buildingName}");
+        return null;
     }
     
+    // Get world position from GridManager
+    Vector2 worldPos = GameManager.Instance.Grid.GetWorldPosition(gridPosition.x, gridPosition.y);
+    
+    // Instantiate at correct world position
+    GameObject buildingObj = Instantiate(data.prefab, worldPos, Quaternion.identity, buildingsContainer);
+    buildingObj.name = $"{data.buildingName}_{gridPosition.x}_{gridPosition.y}";
+    
+    Building building = buildingObj.GetComponent<Building>();
+    if (building == null)
+    {
+        Debug.LogError($"[BuildingManager] Prefab missing Building component");
+        Destroy(buildingObj);
+        return null;
+    }
+    
+    building.Initialize(data, gridPosition, level);
+    activeBuildings.Add(building);
+    
+    EventSystem.Instance.Trigger(new BuildingPlacedEvent(building, gridPosition));
+    
+    Debug.Log($"[BuildingManager] Placed {data.buildingName} at grid {gridPosition}, world {worldPos}");
+    
+    return building;
+}    
     public void RemoveBuilding(Building building)
     {
         if (activeBuildings.Contains(building))

@@ -104,30 +104,24 @@ public class PreparationState : IGameState
     {
         Debug.Log("[PreparationState] Entering Preparation Phase");
         
-        // TODO: Slide up Action Panel
-        // TODO: Draw 2 random assets
-        // TODO: Enable roll and buy buttons
-        
-        // For now, auto-transition after a delay (replace with actual logic)
-        // In real implementation, player clicks "Ready" or "Deploy" button
+        // Show Action Panel
+        ActionPanelController panel = GameObject.FindObjectOfType<ActionPanelController>();
+        if (panel != null)
+        {
+            panel.Show();
+        }
     }
 
     public void Update()
     {
-        // Listen for player input to transition to Deployment
-        // This will be handled by UI buttons in actual implementation
-        
-        // Example: If player presses Deploy button
-        // _stateMachine.ChangeState(GameState.Deployment);
+        // Wait for player to click Battle button
     }
 
     public void Exit()
     {
         Debug.Log("[PreparationState] Exiting Preparation Phase");
-        // TODO: Hide Action Panel (or keep visible but disabled)
     }
 }
-
 /// <summary>
 /// DEPLOYMENT STATE (The Strategy Phase)
 /// - Place assets on the 5x10 grid

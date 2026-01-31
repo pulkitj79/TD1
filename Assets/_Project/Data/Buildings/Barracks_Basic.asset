@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: Barracks_Basic
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: Barracks
+  buildingID: barracks_basic
+  buildingType: 0
+  icon: {fileID: 7932985614558709086, guid: 799df949411095d43910aa38aab996fb, type: 3}
+  prefab: {fileID: 3060367811087139604, guid: c95e7a528b38f044889c578d822d956d, type: 3}
+  size: {x: 1, y: 1}
+  spawnedUnit: {fileID: 0}
+  maxActiveUnits: 3
+  spawnTime: 5
+  towerDamage: 15
+  towerRange: 5
+  towerAttackSpeed: 2
+  projectilePrefab: {fileID: 0}
+  supportRadius: 2
+  providedBuffs: []
+  levelData:
+  - prefabOverride: {fileID: 0}
+    damageMultiplier: 0
+    spawnSpeedMultiplier: 0
+    capacityBonus: 0
+    rangeMultiplier: 0
+  - prefabOverride: {fileID: 0}
+    damageMultiplier: 0
+    spawnSpeedMultiplier: 0
+    capacityBonus: 0
+    rangeMultiplier: 0
+  - prefabOverride: {fileID: 0}
+    damageMultiplier: 0
+    spawnSpeedMultiplier: 0
+    capacityBonus: 0
+    rangeMultiplier: 0
+  - prefabOverride: {fileID: 0}
+    damageMultiplier: 0
+    spawnSpeedMultiplier: 0
+    capacityBonus: 0
+    rangeMultiplier: 0
