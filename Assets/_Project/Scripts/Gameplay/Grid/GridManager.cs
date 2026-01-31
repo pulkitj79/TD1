@@ -1,23 +1,20 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
-/// Manages the grid for portrait mode (9:16) with proper margins
+/// Manages the grid for portrait mode with smart cell generation and movement
 /// </summary>
 public class GridManager : MonoBehaviour
 {
     [Header("Grid Configuration")]
-    [SerializeField] private int columns = 4;
-    [SerializeField] private int rows = 6;
+    [SerializeField] private int columns = 5;
+    [SerializeField] private int rows = 8;
     [SerializeField] private float cellSize = 0.55f;
     [SerializeField] private float cellGap = 0.05f;
-    [SerializeField] private Vector2 gridOrigin = new Vector2(-1.2f, -4.2f);
+    [SerializeField] private Vector2 gridOrigin = new Vector2(-2.25f, -4.4f);
     
-    [Header("Margins")]
-    [SerializeField] private float leftMargin = 0.15f;
-    [SerializeField] private float rightMargin = 0.15f;
-    [SerializeField] private float topMargin = 0.1f;
-    [SerializeField] private float bottomMargin = 0.1f;
+    
     
     [Header("Prefabs")]
     [SerializeField] private GameObject cellPrefab;
@@ -27,6 +24,7 @@ public class GridManager : MonoBehaviour
     
     private GridCell[,] grid;
     private List<GridCell> availableCells = new List<GridCell>();
+    
     
     public void Initialize()
     {
@@ -38,25 +36,28 @@ public class GridManager : MonoBehaviour
         if (config == null)
         {
             Debug.LogWarning("[GridManager] No GridConfig provided, using defaults");
-            CreateGrid(0.5f);
+            CreateGrid(18);
             return;
         }
         
         columns = config.gridSize.x;
         rows = config.gridSize.y;
         
-        CreateGrid(config.initialVisiblePercentage);
+        // Fixed range: 16-20 cells
+        int targetCells = 18; // Default middle value
         
-        Debug.Log($"[GridManager] Grid created: {columns}x{rows}, {config.initialVisiblePercentage * 100}% visible");
+        CreateGrid(targetCells);
+        
+        Debug.Log($"[GridManager] Grid created: {columns}x{rows}, {targetCells} cells target");
     }
     
-    private void CreateGrid(float visiblePercentage)
+    private void CreateGrid(int targetVisibleCells)
     {
         if (gridContainer == null)
         {
             GameObject containerObj = new GameObject("Grid");
             containerObj.transform.SetParent(transform);
-            containerObj.transform.position = Vector3.zero;
+            containerObj.transform.position = new Vector3(0, normalYPosition, 0);
             gridContainer = containerObj.transform;
         }
         
@@ -67,8 +68,6 @@ public class GridManager : MonoBehaviour
         }
         
         grid = new GridCell[columns, rows];
-        int totalCells = columns * rows;
-        int visibleCount = Mathf.RoundToInt(totalCells * visiblePercentage);
         
         for (int x = 0; x < columns; x++)
         {
@@ -84,27 +83,37 @@ public class GridManager : MonoBehaviour
             }
         }
         
-        MakeRandomCellsVisible(visibleCount);
+        MakeRandomCellsVisible(targetVisibleCells);
         
-        Debug.Log($"[GridManager] Created {totalCells} cells ({columns}x{rows}), {availableCells.Count} visible");
+        Debug.Log($"[GridManager] Created {columns * rows} total cells, {availableCells.Count} visible");
     }
     
-    private void MakeRandomCellsVisible(int count)
+    private void MakeRandomCellsVisible(int targetCount)
     {
         availableCells.Clear();
         
-        if (count <= 0 || grid == null) return;
+        if (grid == null) return;
+        
+        targetCount = Mathf.Clamp(targetCount, 16, 20);
+        
+        int maxRowFromTop = 2; // Top 3 rows only
         
         int startX = Random.Range(1, columns - 1);
-        int startY = Random.Range(1, rows - 1);
+        int startY = rows - 1 - Random.Range(0, 3);
+        
+        Debug.Log($"[GridManager] Starting block at ({startX}, {startY}) - targeting {targetCount} cells");
         
         List<Vector2Int> toProcess = new List<Vector2Int>();
         HashSet<Vector2Int> processed = new HashSet<Vector2Int>();
         
         toProcess.Add(new Vector2Int(startX, startY));
         
-        while (toProcess.Count > 0 && availableCells.Count < count)
+        int attempts = 0;
+        
+        while (toProcess.Count > 0 && availableCells.Count < targetCount && attempts < 1000)
         {
+            attempts++;
+            
             int index = Random.Range(0, toProcess.Count);
             Vector2Int current = toProcess[index];
             toProcess.RemoveAt(index);
@@ -115,44 +124,55 @@ public class GridManager : MonoBehaviour
             if (current.x < 0 || current.x >= columns || current.y < 0 || current.y >= rows)
                 continue;
             
+            int rowFromTop = rows - 1 - current.y;
+            if (rowFromTop > maxRowFromTop)
+                continue;
+            
             GridCell cell = grid[current.x, current.y];
             cell.SetVisible(true);
             availableCells.Add(cell);
             
-            Vector2Int[] neighbors = new Vector2Int[]
-            {
-                new Vector2Int(current.x + 1, current.y),
-                new Vector2Int(current.x - 1, current.y),
-                new Vector2Int(current.x, current.y + 1),
-                new Vector2Int(current.x, current.y - 1),
-            };
+            Vector2Int[] neighbors = GetNeighbors(current);
+            
+            float progress = (float)availableCells.Count / targetCount;
+            float expansionChance = 1.0f - (progress * 0.5f);
             
             foreach (var neighbor in neighbors)
             {
-                if (!processed.Contains(neighbor) && Random.value > 0.2f)
+                if (!processed.Contains(neighbor) && Random.value < expansionChance)
                 {
                     toProcess.Add(neighbor);
                 }
             }
         }
         
-        Debug.Log($"[GridManager] Created contiguous region with {availableCells.Count} cells");
+        Debug.Log($"[GridManager] Created block with {availableCells.Count} cells in top 3 rows");
     }
+    
+    private Vector2Int[] GetNeighbors(Vector2Int pos)
+    {
+        return new Vector2Int[]
+        {
+            new Vector2Int(pos.x + 1, pos.y),
+            new Vector2Int(pos.x - 1, pos.y),
+            new Vector2Int(pos.x, pos.y + 1),
+            new Vector2Int(pos.x, pos.y - 1),
+        };
+    }
+    
     
     public Vector2 GetWorldPosition(int x, int y)
     {
         float effectiveCellSize = cellSize + cellGap;
         return gridOrigin + new Vector2(
-            leftMargin + (x * effectiveCellSize),
-            bottomMargin + (y * effectiveCellSize)
+            x * effectiveCellSize,
+            y * effectiveCellSize
         );
     }
     
     public Vector2Int GetGridPosition(Vector2 worldPos)
     {
         Vector2 localPos = worldPos - gridOrigin;
-        localPos -= new Vector2(leftMargin, bottomMargin);
-        
         float effectiveCellSize = cellSize + cellGap;
         int x = Mathf.RoundToInt(localPos.x / effectiveCellSize);
         int y = Mathf.RoundToInt(localPos.y / effectiveCellSize);
@@ -198,45 +218,144 @@ public class GridManager : MonoBehaviour
         Debug.Log($"[GridManager] Placed {building.Data.buildingName} at {position}");
     }
     
-    private void OnDrawGizmos()
+    public bool PurchaseCellBlock(Vector2Int position, int cost)
     {
-        if (!Application.isPlaying) return;
-        
-        // Screen boundaries (camera size 4.8, aspect 9:16)
-        float screenHeight = 9.6f;
-        float screenWidth = 2.7f;
-        
-        // Draw screen boundary in cyan
-        Gizmos.color = Color.cyan;
-        Vector3 bottomLeft = new Vector3(-screenWidth / 2, -screenHeight / 2, 0);
-        Vector3 topLeft = new Vector3(-screenWidth / 2, screenHeight / 2, 0);
-        Vector3 topRight = new Vector3(screenWidth / 2, screenHeight / 2, 0);
-        Vector3 bottomRight = new Vector3(screenWidth / 2, -screenHeight / 2, 0);
-        
-        Gizmos.DrawLine(bottomLeft, topLeft);
-        Gizmos.DrawLine(topLeft, topRight);
-        Gizmos.DrawLine(topRight, bottomRight);
-        Gizmos.DrawLine(bottomRight, bottomLeft);
-        
-        // Draw grid bounds in green
-        if (grid != null && grid.Length > 0)
+        if (!GameManager.Instance.Currency.HasGold(cost))
         {
-            Gizmos.color = Color.green;
-            Vector2 gridBL = GetWorldPosition(0, 0);
-            Vector2 gridTR = GetWorldPosition(columns - 1, rows - 1);
-            
-            float effectiveCellSize = cellSize + cellGap;
-            gridTR += new Vector2(effectiveCellSize, effectiveCellSize);
-            
-            Vector3 bl = new Vector3(gridBL.x - leftMargin, gridBL.y - bottomMargin, 0);
-            Vector3 tl = new Vector3(gridBL.x - leftMargin, gridTR.y + topMargin, 0);
-            Vector3 tr = new Vector3(gridTR.x + rightMargin, gridTR.y + topMargin, 0);
-            Vector3 br = new Vector3(gridTR.x + rightMargin, gridBL.y - bottomMargin, 0);
-            
-            Gizmos.DrawLine(bl, tl);
-            Gizmos.DrawLine(tl, tr);
-            Gizmos.DrawLine(tr, br);
-            Gizmos.DrawLine(br, bl);
+            Debug.LogWarning("[GridManager] Not enough gold");
+            return false;
         }
+        
+        Vector2Int[] blockCells = new Vector2Int[]
+        {
+            position,
+            new Vector2Int(position.x + 1, position.y)
+        };
+        
+        foreach (var cellPos in blockCells)
+        {
+            if (cellPos.x < 0 || cellPos.x >= columns || cellPos.y < 0 || cellPos.y >= rows)
+                return false;
+            
+            GridCell cell = grid[cellPos.x, cellPos.y];
+            if (cell.IsVisible)
+                return false;
+        }
+        
+        if (GameManager.Instance.Currency.SpendGold(cost))
+        {
+            foreach (var cellPos in blockCells)
+            {
+                GridCell cell = grid[cellPos.x, cellPos.y];
+                cell.SetVisible(true);
+                availableCells.Add(cell);
+            }
+            
+            Debug.Log($"[GridManager] Purchased cell block at {position}");
+            return true;
+        }
+        
+        return false;
     }
+    // ============================================
+    // GRID MOVEMENT METHODS
+    // ============================================
+
+    [Header("Movement")]
+    [SerializeField] private float normalYPosition = -4.4f;
+    [SerializeField] private float raisedYPosition = -2.0f;
+    [SerializeField] private float moveDuration = 0.3f;
+
+    private bool isRaised = false;
+    private Coroutine moveCoroutine;
+    
+    /// <summary>
+    /// Move grid up (for Action Panel)
+    /// </summary>
+    public void RaiseGrid()
+    {
+        if (isRaised)
+        {
+            Debug.Log("[GridManager] Grid already raised");
+            return;
+        }
+        
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+        
+        moveCoroutine = StartCoroutine(MoveGridTo(raisedYPosition));
+        isRaised = true;
+        
+        Debug.Log("[GridManager] Raising grid");
+    }
+    
+    /// <summary>
+    /// Move grid down (normal position)
+    /// </summary>
+    public void LowerGrid()
+    {
+        if (!isRaised)
+        {
+            Debug.Log("[GridManager] Grid already lowered");
+            return;
+        }
+        
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+        
+        moveCoroutine = StartCoroutine(MoveGridTo(normalYPosition));
+        isRaised = false;
+        
+        Debug.Log("[GridManager] Lowering grid");
+    }
+    
+    /// <summary>
+    /// Smooth movement coroutine
+    /// </summary>
+    private System.Collections.IEnumerator MoveGridTo(float targetY)
+    {
+        if (gridContainer == null)
+        {
+            Debug.LogError("[GridManager] Grid container is null!");
+            yield break;
+        }
+        
+        Vector3 startPos = gridContainer.position;
+        Vector3 targetPos = new Vector3(startPos.x, targetY, startPos.z);
+        
+        Debug.Log($"[GridManager] Moving from Y={startPos.y:F2} to Y={targetY:F2}");
+        
+        float elapsed = 0f;
+        
+        while (elapsed < moveDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / moveDuration;
+            
+            // Ease-out cubic
+            t = 1f - Mathf.Pow(1f - t, 3f);
+            
+            gridContainer.position = Vector3.Lerp(startPos, targetPos, t);
+            yield return null;
+        }
+        
+        gridContainer.position = targetPos;
+        
+        Debug.Log($"[GridManager] Movement complete. Y={gridContainer.position.y:F2}");
+    }
+    
+    // TEST METHODS - Can be called from Inspector or buttons
+    [ContextMenu("Test: Raise Grid")]
+    public void TestRaiseGrid()
+    {
+        RaiseGrid();
+    }
+    
+    [ContextMenu("Test: Lower Grid")]
+    public void TestLowerGrid()
+    {
+        LowerGrid();
+    }
+
+
 }

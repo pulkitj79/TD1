@@ -104,15 +104,21 @@ public class GridCell : MonoBehaviour
         
         if (!IsVisible)
         {
-            spriteRenderer.color = lockedColor;
-        }
-        else if (IsOccupied)
-        {
-            spriteRenderer.color = occupiedColor;
+            // Hidden cells are completely invisible
+            spriteRenderer.enabled = false;
         }
         else
         {
-            spriteRenderer.color = availableColor;
+            spriteRenderer.enabled = true;
+            
+            if (IsOccupied)
+            {
+                spriteRenderer.color = occupiedColor;
+            }
+            else
+            {
+                spriteRenderer.color = availableColor;
+            }
         }
     }
 

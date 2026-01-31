@@ -594,11 +594,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a4381c4dbd73734ba7e37201ee37e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
-  columns: 8
-  rows: 5
+  columns: 4
+  rows: 6
   cellSize: 0.55
   cellGap: 0.05
-  gridOrigin: {x: -2.2, y: -3.5}
+  gridOrigin: {x: -2.25, y: -4.4}
   leftMargin: 0.15
   rightMargin: 0.15
   topMargin: 0.1
