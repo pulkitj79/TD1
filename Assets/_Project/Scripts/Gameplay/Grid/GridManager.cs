@@ -31,6 +31,14 @@ public class GridManager : MonoBehaviour
         Debug.Log("[GridManager] Initialized");
     }
     
+    /// <summary>
+    /// Get the grid container transform (for parenting buildings)
+    /// </summary>
+    public Transform GetGridContainer()
+    {
+        return gridContainer;
+    }
+
     public void SetupGrid(GridConfig config)
     {
         if (config == null)
@@ -160,22 +168,73 @@ public class GridManager : MonoBehaviour
         };
     }
     
-    
+    /// <summary>
+    /// Get world position for a grid coordinate
+    /// </summary>
     public Vector2 GetWorldPosition(int x, int y)
     {
+        if (gridContainer == null)
+        {
+            Debug.LogError("[GridManager] Grid container is null!");
+            return Vector2.zero;
+        }
+        
         float effectiveCellSize = cellSize + cellGap;
-        return gridOrigin + new Vector2(
-            x * effectiveCellSize,
-            y * effectiveCellSize
+        
+        // Calculate grid dimensions
+        float gridWidth = 8 * effectiveCellSize;
+        float gridHeight = 5 * effectiveCellSize;
+        
+        // Calculate offset to center grid
+        float offsetX = -gridWidth / 2f + effectiveCellSize / 2f;
+        float offsetY = -gridHeight / 2f + effectiveCellSize / 2f;
+        
+        // Calculate local position (relative to grid container center)
+        Vector2 localPos = new Vector2(
+            offsetX + (x * effectiveCellSize),
+            offsetY + (y * effectiveCellSize)
         );
+        
+        // Convert to world position
+        Vector3 worldPos = gridContainer.TransformPoint(localPos);
+        
+        return worldPos;
     }
-    
+
+    /// <summary>
+    /// Get grid position from world position (CRITICAL FIX)
+    /// </summary>
     public Vector2Int GetGridPosition(Vector2 worldPos)
     {
-        Vector2 localPos = worldPos - gridOrigin;
+        if (gridContainer == null)
+        {
+            Debug.LogError("[GridManager] Grid container is null!");
+            return Vector2Int.zero;
+        }
+        
+        // Convert world position to local position (relative to grid container)
+        Vector3 localPos = gridContainer.InverseTransformPoint(worldPos);
+        
         float effectiveCellSize = cellSize + cellGap;
-        int x = Mathf.RoundToInt(localPos.x / effectiveCellSize);
-        int y = Mathf.RoundToInt(localPos.y / effectiveCellSize);
+        
+        // Calculate grid dimensions
+        float gridWidth = 8 * effectiveCellSize;
+        float gridHeight = 5 * effectiveCellSize;
+        
+        // Calculate offset
+        float offsetX = -gridWidth / 2f + effectiveCellSize / 2f;
+        float offsetY = -gridHeight / 2f + effectiveCellSize / 2f;
+        
+        // Calculate grid coordinates
+        int x = Mathf.RoundToInt((localPos.x - offsetX) / effectiveCellSize);
+        int y = Mathf.RoundToInt((localPos.y - offsetY) / effectiveCellSize);
+        
+        // Clamp to grid bounds
+        x = Mathf.Clamp(x, 0, 7); // 8 columns (0-7)
+        y = Mathf.Clamp(y, 0, 4); // 5 rows (0-4)
+        
+        Debug.Log($"[GridManager] World {worldPos} -> Local {localPos} -> Grid ({x},{y})");
+        
         return new Vector2Int(x, y);
     }
     

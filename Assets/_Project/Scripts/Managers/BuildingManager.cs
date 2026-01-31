@@ -27,9 +27,15 @@ public Building CreateBuilding(BuildingData data, Vector2Int gridPosition, int l
     // Get world position from GridManager
     Vector2 worldPos = GameManager.Instance.Grid.GetWorldPosition(gridPosition.x, gridPosition.y);
     
-    // Instantiate at correct world position
-    GameObject buildingObj = Instantiate(data.prefab, worldPos, Quaternion.identity, buildingsContainer);
+    // Get grid container reference
+    Transform gridContainer = GameManager.Instance.Grid.GetGridContainer();
+    
+    // CRITICAL: Parent to grid container, not buildingsContainer!
+    GameObject buildingObj = Instantiate(data.prefab, gridContainer);
     buildingObj.name = $"{data.buildingName}_{gridPosition.x}_{gridPosition.y}";
+    
+    // Set LOCAL position (relative to grid container)
+    buildingObj.transform.position = worldPos;
     
     Building building = buildingObj.GetComponent<Building>();
     if (building == null)
@@ -44,7 +50,7 @@ public Building CreateBuilding(BuildingData data, Vector2Int gridPosition, int l
     
     EventSystem.Instance.Trigger(new BuildingPlacedEvent(building, gridPosition));
     
-    Debug.Log($"[BuildingManager] Placed {data.buildingName} at grid {gridPosition}, world {worldPos}");
+    Debug.Log($"[BuildingManager] Placed {data.buildingName} at grid {gridPosition}, world {worldPos}, parent: {buildingObj.transform.parent.name}");
     
     return building;
 }    
