@@ -149,4 +149,15 @@ public class GridCell : MonoBehaviour
             UpdateVisual();
         }
     }
+    /// <summary>
+    /// Show cell again (after building removed)
+    /// </summary>
+    public void Show()
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = true;
+            UpdateVisual();
+        }
+    }
 }

@@ -7,7 +7,7 @@ public abstract class Building : MonoBehaviour
     
     public BuildingData Data => data;
     public int CurrentLevel { get; protected set; } = 1;
-    public Vector2Int GridPosition { get; protected set; }
+    public Vector2Int GridPosition { get; set; }
     
     public virtual void Initialize(BuildingData buildingData, Vector2Int gridPos, int level = 1)
     {

@@ -111,8 +111,15 @@ public class DraggableBuilding : MonoBehaviour, IBeginDragHandler, IDragHandler,
             
             Debug.Log($"[DraggableBuilding] Successfully placed {buildingData.buildingName}!");
             
-            // HIDE this slot after placing (one-time use)
-            gameObject.SetActive(false);
+            // TESTING MODE: Don't remove the slot, make it unlimited!
+            // Comment out these lines:
+            // gameObject.SetActive(false);
+            
+            // Instead, just reset the drag state
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
+            }
         }
     }
 }

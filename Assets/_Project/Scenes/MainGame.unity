@@ -277,7 +277,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1459578069}
+      - m_Target: {fileID: 854116496}
         m_TargetAssemblyTypeName: ActionPanelController, Assembly-CSharp
         m_MethodName: Hide
         m_Mode: 1
@@ -383,6 +383,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -508,6 +509,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6c6b52273e39434b923ceee994d3268, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RaycastDebugger
 --- !u!1 &575451763
 GameObject:
   m_ObjectHideFlags: 0
@@ -1107,6 +1120,7 @@ GameObject:
   - component: {fileID: 854116493}
   - component: {fileID: 854116495}
   - component: {fileID: 854116494}
+  - component: {fileID: 854116496}
   m_Layer: 5
   m_Name: ActionPanel
   m_TagString: Untagged
@@ -1149,7 +1163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.9333334, g: 0.8666667, b: 0.509804, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1173,6 +1187,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 854116492}
   m_CullTransparentMesh: 1
+--- !u!114 &854116496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854116492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77af0edce0bc903479a0cca8f054b83b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActionPanelController
+  panelRect: {fileID: 0}
+  showDuration: 0.3
+  hiddenY: -500
+  visibleY: 0
 --- !u!1 &1459578064
 GameObject:
   m_ObjectHideFlags: 0
@@ -1185,7 +1215,6 @@ GameObject:
   - component: {fileID: 1459578067}
   - component: {fileID: 1459578066}
   - component: {fileID: 1459578065}
-  - component: {fileID: 1459578069}
   m_Layer: 5
   m_Name: ActionPanelCanvas
   m_TagString: Untagged
@@ -1276,22 +1305,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1459578069
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1459578064}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77af0edce0bc903479a0cca8f054b83b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ActionPanelController
-  panelRect: {fileID: 0}
-  showDuration: 0.3
-  hiddenY: -400
-  visibleY: 0
 --- !u!1 &1596487501
 GameObject:
   m_ObjectHideFlags: 0

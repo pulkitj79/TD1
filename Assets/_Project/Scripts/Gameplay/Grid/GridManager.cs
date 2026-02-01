@@ -270,11 +270,21 @@ public class GridManager : MonoBehaviour
             for (int y = 0; y < size.y; y++)
             {
                 Vector2Int cellPos = position + new Vector2Int(x, y);
-                grid[cellPos.x, cellPos.y].SetOccupied(building);
+                
+                // Bounds check
+                if (cellPos.x >= 0 && cellPos.x < 8 && cellPos.y >= 0 && cellPos.y < 5)
+                {
+                    GridCell cell = grid[cellPos.x, cellPos.y];
+                    cell.SetOccupied(building);
+                    //cell.Hide(); // Hide cell under building
+                }
             }
         }
         
-        Debug.Log($"[GridManager] Placed {building.Data.buildingName} at {position}");
+        // IMPORTANT: Don't reset building level here!
+        // The building's CurrentLevel should be preserved
+        
+        Debug.Log($"[GridManager] Placed {building.Data.buildingName} L{building.CurrentLevel} at {position}");
     }
     
     public bool PurchaseCellBlock(Vector2Int position, int cost)
@@ -402,7 +412,42 @@ public class GridManager : MonoBehaviour
         
         Debug.Log($"[GridManager] Movement complete. Y={gridContainer.position.y:F2}");
     }
-    
+
+    /// <summary>
+    /// Remove building from grid (frees up cells)
+    /// </summary>
+    public void RemoveBuildingFromGrid(Building building, Vector2Int position)
+    {
+        Vector2Int size = building.Data.size;
+        
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int y = 0; y < size.y; y++)
+            {
+                Vector2Int cellPos = position + new Vector2Int(x, y);
+                if (cellPos.x >= 0 && cellPos.x < 8 && cellPos.y >= 0 && cellPos.y < 5)
+                {
+                    GridCell cell = grid[cellPos.x, cellPos.y];
+                    cell.ClearOccupancy();
+                    cell.Show(); // Show cell again when building removed
+                }
+            }
+        }
+        
+        Debug.Log($"[GridManager] Freed cells at {position}");
+    }
+
+    /// <summary>
+    /// Get building at a specific grid position
+    /// </summary>
+    public Building GetBuildingAtPosition(Vector2Int position)
+    {
+        if (position.x < 0 || position.x >= 8 || position.y < 0 || position.y >= 5)
+            return null;
+        
+        GridCell cell = grid[position.x, position.y];
+        return cell.OccupyingBuilding;
+    }        
     // TEST METHODS - Can be called from Inspector or buttons
     [ContextMenu("Test: Raise Grid")]
     public void TestRaiseGrid()

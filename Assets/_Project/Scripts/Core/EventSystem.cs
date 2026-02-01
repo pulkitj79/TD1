@@ -355,3 +355,15 @@ public struct GameStateChangedEvent : IGameEvent
 }
 
 #endregion
+
+public class BuildingMergedEvent: IGameEvent
+{
+    public Building Building { get; private set; }
+    public int NewLevel { get; private set; }
+    
+    public BuildingMergedEvent(Building building, int newLevel)
+    {
+        Building = building;
+        NewLevel = newLevel;
+    }
+}
