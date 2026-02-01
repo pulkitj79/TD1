@@ -64,10 +64,13 @@ public class GridManager : MonoBehaviour
         if (gridContainer == null)
         {
             GameObject containerObj = new GameObject("Grid");
-            containerObj.transform.SetParent(transform);
-            containerObj.transform.position = new Vector3(0, normalYPosition, 0);
+            containerObj.transform.SetParent(transform, false);
+            containerObj.transform.localPosition = Vector3.zero;
             gridContainer = containerObj.transform;
+            Debug.Log("[GridManager] Created grid container");
         }
+        
+        gridContainer.position = new Vector3(gridOrigin.x, normalYPosition, 0);
         
         if (cellPrefab == null)
         {
@@ -75,27 +78,44 @@ public class GridManager : MonoBehaviour
             return;
         }
         
-        grid = new GridCell[columns, rows];
-        
-        for (int x = 0; x < columns; x++)
+        // Clear existing cells
+        foreach (Transform child in gridContainer)
         {
-            for (int y = 0; y < rows; y++)
+            Destroy(child.gameObject);
+        }
+        
+        grid = new GridCell[8, 5]; // 8 columns × 5 rows
+        
+        // CREATE ALL CELLS (visible and invisible)
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 5; y++)
             {
                 Vector2 position = GetWorldPosition(x, y);
-                GameObject cellObj = Instantiate(cellPrefab, position, Quaternion.identity, gridContainer);
+                GameObject cellObj = Instantiate(cellPrefab, gridContainer);
+                cellObj.transform.position = position;
                 cellObj.name = $"Cell_{x}_{y}";
                 
                 GridCell cell = cellObj.GetComponent<GridCell>();
+                
+                // Initialize all cells as INVISIBLE first
                 cell.Initialize(new Vector2Int(x, y), false, cellSize);
                 grid[x, y] = cell;
             }
         }
+
+         if (gridContainer != null)
+        {
+            gridContainer.position = new Vector3(gridOrigin.x, normalYPosition, 0);
+            Debug.Log($"[GridManager] Grid container positioned at {gridContainer.position}");
+        }
         
+        // Now make some cells visible (contiguous block in top 3 rows)
         MakeRandomCellsVisible(targetVisibleCells);
         
-        Debug.Log($"[GridManager] Created {columns * rows} total cells, {availableCells.Count} visible");
-    }
-    
+        int totalCells = 8 * 5;
+        Debug.Log($"[GridManager] Created {totalCells} cells, {availableCells.Count} visible");
+    }    
     private void MakeRandomCellsVisible(int targetCount)
     {
         availableCells.Clear();

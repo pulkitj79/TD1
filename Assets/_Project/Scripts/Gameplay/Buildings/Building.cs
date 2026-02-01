@@ -28,8 +28,40 @@ public abstract class Building : MonoBehaviour
         enabled = false;
     }
     
-    public virtual void UpgradeLevel(int newLevel)
+    
+     public virtual void UpgradeLevel(int newLevel)
     {
         CurrentLevel = Mathf.Clamp(newLevel, 1, 4);
+        UpdateLevelVisual();
     }
+    
+
+    /// <summary>
+    /// Update building visual based on current level
+    /// </summary>
+    public void UpdateLevelVisual()
+    {
+        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+        if (renderer != null)
+        {
+            // Calculate color based on level
+            float colorFactor = 1f - (CurrentLevel * 0.15f);
+            Color levelColor = new Color(colorFactor, colorFactor, 1f);
+            
+            renderer.color = levelColor;
+            
+            Debug.Log($"[Building] Updated visual for level {CurrentLevel}, color factor: {colorFactor}");
+        }
+    }
+
+    /// <summary>
+    /// Override UpgradeLevel to include visual update
+    /// </summary>
+    /*public override void UpgradeLevel(int newLevel)
+    {
+        base.UpgradeLevel(newLevel);
+        UpdateLevelVisual();
+    }
+    */
+
 }

@@ -174,21 +174,28 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         
         Debug.Log($"[Drag] 🎉 MERGING to level {newLevel}");
         
+        // Upgrade target
         target.UpgradeLevel(newLevel);
         
-        SpriteRenderer targetRenderer = target.GetComponent<SpriteRenderer>();
-        if (targetRenderer != null)
+        // Update visual
+        target.UpdateLevelVisual();
+        
+        // IMPORTANT: Ensure target has drag handler
+        SimpleBuildingDragHandler targetDragHandler = target.GetComponent<SimpleBuildingDragHandler>();
+        if (targetDragHandler == null)
         {
-            float factor = 1f - (newLevel * 0.15f);
-            targetRenderer.color = new Color(factor, factor, 1f);
+            Debug.LogWarning($"[Drag] Target missing drag handler! Adding it...");
+            target.gameObject.AddComponent<SimpleBuildingDragHandler>();
         }
         
+        // Remove this building
         GameManager.Instance.Buildings.RemoveBuilding(building);
         Destroy(gameObject);
         
         EventSystem.Instance.Trigger(new BuildingMergedEvent(target, newLevel));
-    }
-    
+        
+        Debug.Log($"[Drag] ✅ Merge complete!");
+    }    
     private void PlaceAtNewPosition(Vector2Int newPos)
     {
         building.GridPosition = newPos;
@@ -198,6 +205,9 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         
         GameManager.Instance.Grid.PlaceBuilding(building, newPos);
         
+        // IMPORTANT: Restore level-based visual
+        building.UpdateLevelVisual();
+
         Debug.Log($"[Drag] ✅ Placed at {newPos}");
     }
     
@@ -207,6 +217,9 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         building.GridPosition = originalGridPosition;
         GameManager.Instance.Grid.PlaceBuilding(building, originalGridPosition);
         
+        // Restore level-based visual
+        building.UpdateLevelVisual();
+
         Debug.Log($"[Drag] ↩️ Returned to {originalGridPosition}");
     }
 }

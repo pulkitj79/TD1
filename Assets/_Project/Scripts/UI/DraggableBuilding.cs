@@ -76,10 +76,30 @@ public class DraggableBuilding : MonoBehaviour, IBeginDragHandler, IDragHandler,
         
         if (draggedObject == null) return;
         
-        // Check if we're over a valid grid cell
+        // Get world position
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
         Vector2Int gridPos = GameManager.Instance.Grid.GetGridPosition(worldPos);
         
+        Debug.Log($"[DraggableBuilding] Dropped at grid {gridPos}");
+        
+        // IMPORTANT: Check for MERGE first, BEFORE checking CanPlaceBuilding
+        // This allows merging even on occupied cells
+        Building existingBuilding = GameManager.Instance.Grid.GetBuildingAtPosition(gridPos);
+        
+        if (existingBuilding != null)
+        {
+            Debug.Log($"[DraggableBuilding] Found existing building: {existingBuilding.Data.buildingName} L{existingBuilding.CurrentLevel}");
+            
+            // Try to merge with existing building
+            PlaceBuilding(gridPos); // This will handle merge logic
+            
+            // Destroy UI drag object
+            Destroy(draggedObject);
+            draggedObject = null;
+            return;
+        }
+        
+        // No existing building - check if we can place normally
         bool canPlace = GameManager.Instance.Grid.CanPlaceBuilding(gridPos, buildingData.size);
         
         if (canPlace)
@@ -95,27 +115,84 @@ public class DraggableBuilding : MonoBehaviour, IBeginDragHandler, IDragHandler,
         // Destroy dragged object
         Destroy(draggedObject);
         draggedObject = null;
-    }
-    
+    }    
     private void PlaceBuilding(Vector2Int gridPosition)
     {
-        Debug.Log($"[DraggableBuilding] Placing {buildingData.buildingName} at {gridPosition}");
+        Debug.Log($"[DraggableBuilding] Attempting to place {buildingData.buildingName} at {gridPosition}");
         
-        // Create building through BuildingManager
+        // Check if there's already a building at this position
+        Building existingBuilding = GameManager.Instance.Grid.GetBuildingAtPosition(gridPosition);
+        
+        if (existingBuilding != null)
+        {
+            Debug.Log($"[DraggableBuilding] Found existing building: {existingBuilding.Data.buildingName} L{existingBuilding.CurrentLevel}");
+            
+            // Check if we can merge
+            bool sameType = buildingData.buildingID == existingBuilding.Data.buildingID;
+            bool sameLevel = existingBuilding.CurrentLevel == 1; // Panel buildings are always L1, target must also be L1
+            bool notMaxLevel = existingBuilding.CurrentLevel < 4;
+            
+            Debug.Log($"[DraggableBuilding] Merge check: SameType={sameType}, SameLevel={sameLevel}, NotMax={notMaxLevel}");
+            
+            bool canMerge = sameType && sameLevel && notMaxLevel;
+            
+            if (canMerge)
+            {
+                Debug.Log($"[DraggableBuilding] 🎉 MERGING panel building into grid building!");
+                
+                // Upgrade the existing building
+                existingBuilding.UpgradeLevel(existingBuilding.CurrentLevel + 1);
+                
+                // Update visual (if method exists)
+                if (existingBuilding.GetComponent<Building>() != null)
+                {
+                    SpriteRenderer renderer = existingBuilding.GetComponent<SpriteRenderer>();
+                    if (renderer != null)
+                    {
+                        float factor = 1f - (existingBuilding.CurrentLevel * 0.15f);
+                        renderer.color = new Color(factor, factor, 1f);
+                        Debug.Log($"[DraggableBuilding] Updated color for level {existingBuilding.CurrentLevel}");
+                    }
+                }
+                
+                // Reset UI slot for next placement
+                if (canvasGroup != null)
+                {
+                    canvasGroup.alpha = 1f;
+                }
+                
+                Debug.Log($"[DraggableBuilding] ✅ Merge complete! Building now level {existingBuilding.CurrentLevel}");
+                
+                // Trigger merge event
+                EventSystem.Instance.Trigger(new BuildingMergedEvent(existingBuilding, existingBuilding.CurrentLevel));
+                
+                return; // Important: Don't create new building
+            }
+            else
+            {
+                Debug.Log($"[DraggableBuilding] ❌ Can't merge - different building type or level mismatch");
+                
+                // Cell is occupied, can't place
+                if (canvasGroup != null)
+                {
+                    canvasGroup.alpha = 1f;
+                }
+                return;
+            }
+        }
+        
+        // No building at target - place new building
+        Debug.Log($"[DraggableBuilding] No existing building, creating new one");
+        
         Building building = GameManager.Instance.Buildings.CreateBuilding(buildingData, gridPosition, 1);
         
         if (building != null)
         {
-            // Mark grid cells as occupied
             GameManager.Instance.Grid.PlaceBuilding(building, gridPosition);
             
-            Debug.Log($"[DraggableBuilding] Successfully placed {buildingData.buildingName}!");
+            Debug.Log($"[DraggableBuilding] ✅ Successfully placed {buildingData.buildingName}!");
             
-            // TESTING MODE: Don't remove the slot, make it unlimited!
-            // Comment out these lines:
-            // gameObject.SetActive(false);
-            
-            // Instead, just reset the drag state
+            // Reset for unlimited placement (testing mode)
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 1f;

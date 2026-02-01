@@ -67,20 +67,39 @@ public class GridCell : MonoBehaviour
     /// <summary>
     /// Mark this cell as occupied by a building
     /// </summary>
+/// <summary>
+/// Mark this cell as occupied by a building
+/// </summary>
     public void SetOccupied(Building building)
     {
         IsOccupied = true;
         OccupyingBuilding = building;
+        
+        // CRITICAL FIX: Disable collider so building underneath can receive clicks!
+        BoxCollider2D collider = GetComponent<BoxCollider2D>();
+        if (collider != null)
+        {
+            collider.enabled = false;
+        }
+        
         UpdateVisual();
     }
-    
+
     /// <summary>
-    /// Clear occupancy
+    /// Clear occupancy (building removed or moved)
     /// </summary>
     public void ClearOccupancy()
     {
         IsOccupied = false;
         OccupyingBuilding = null;
+        
+        // Re-enable collider when cell is empty
+        BoxCollider2D collider = GetComponent<BoxCollider2D>();
+        if (collider != null)
+        {
+            collider.enabled = true;
+        }
+        
         UpdateVisual();
     }
     
@@ -113,7 +132,8 @@ public class GridCell : MonoBehaviour
             
             if (IsOccupied)
             {
-                spriteRenderer.color = occupiedColor;
+                // Occupied cells: Semi-transparent (10-20%)
+            spriteRenderer.color = new Color(1f, 1f, 1f, 0.15f); // 15% opacity}
             }
             else
             {
