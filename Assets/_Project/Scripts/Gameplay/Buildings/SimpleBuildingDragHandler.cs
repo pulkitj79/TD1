@@ -7,6 +7,7 @@ public class SimpleBuildingDragHandler : MonoBehaviour
     private BoxCollider2D boxCollider;
     
     private bool isDragging = false;
+    private bool isDragAllowed = true; // NEW: Track if dragging is allowed
     private Vector3 originalPosition;
     private Vector2Int originalGridPosition;
     private Vector3 dragOffset;
@@ -32,11 +33,46 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         
         boxCollider.isTrigger = false;
         
+        // Subscribe to game state changes
+        EventSystem.Instance.Subscribe<GameStateChangedEvent>(OnGameStateChanged);
+        
         Debug.Log($"[Drag] Ready on {building.Data.buildingName} L{building.CurrentLevel}");
+    }
+    
+    private void OnDestroy()
+    {
+        // Unsubscribe when destroyed
+        if (EventSystem.Instance != null)
+        {
+            EventSystem.Instance.Unsubscribe<GameStateChangedEvent>(OnGameStateChanged);
+        }
+    }
+    
+    /// <summary>
+    /// Handle game state changes - enable/disable dragging
+    /// </summary>
+    private void OnGameStateChanged(GameStateChangedEvent evt)
+    {
+        // Only allow dragging in Preparation and Deployment states
+        isDragAllowed = (evt.NewState == GameState.Preparation || 
+                        evt.NewState == GameState.Deployment);
+        
+        if (!isDragAllowed && isDragging)
+        {
+            // If battle starts while dragging, cancel the drag
+            CancelDrag();
+        }
     }
     
     private void OnMouseDown()
     {
+        // Check if dragging is allowed
+        if (!isDragAllowed)
+        {
+            Debug.Log($"[Drag] ❌ Dragging not allowed in current game state");
+            return; // Battle mode - no dragging!
+        }
+        
         Debug.Log($"[Drag] ⭐ Clicked {building.Data.buildingName} L{building.CurrentLevel} at {building.GridPosition}");
         
         originalPosition = transform.position;
@@ -60,7 +96,7 @@ public class SimpleBuildingDragHandler : MonoBehaviour
     
     private void OnMouseDrag()
     {
-        if (!isDragging) return;
+        if (!isDragging || !isDragAllowed) return;
         
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         transform.position = new Vector3(
@@ -82,6 +118,13 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         {
             spriteRenderer.sortingOrder = 1;
             spriteRenderer.color = Color.white;
+        }
+        
+        // If drag is no longer allowed (state changed), return to original
+        if (!isDragAllowed)
+        {
+            ReturnToOriginalPosition();
+            return;
         }
         
         // Check if over Action Panel
@@ -134,6 +177,23 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         {
             ReturnToOriginalPosition();
         }
+    }
+    
+    /// <summary>
+    /// Cancel drag operation (called when state changes)
+    /// </summary>
+    private void CancelDrag()
+    {
+        isDragging = false;
+        ReturnToOriginalPosition();
+        
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = 1;
+            spriteRenderer.color = Color.white;
+        }
+        
+        Debug.Log($"[Drag] ⚠️ Drag cancelled due to state change");
     }
     
     private bool IsOverActionPanel()
@@ -195,7 +255,8 @@ public class SimpleBuildingDragHandler : MonoBehaviour
         EventSystem.Instance.Trigger(new BuildingMergedEvent(target, newLevel));
         
         Debug.Log($"[Drag] ✅ Merge complete!");
-    }    
+    }
+    
     private void PlaceAtNewPosition(Vector2Int newPos)
     {
         building.GridPosition = newPos;

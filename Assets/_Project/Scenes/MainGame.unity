@@ -206,6 +206,7 @@ GameObject:
   - component: {fileID: 317987600}
   - component: {fileID: 317987599}
   - component: {fileID: 317987598}
+  - component: {fileID: 317987601}
   m_Layer: 5
   m_Name: BattleButton
   m_TagString: Untagged
@@ -276,19 +277,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 317987599}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 854116496}
-        m_TargetAssemblyTypeName: ActionPanelController, Assembly-CSharp
-        m_MethodName: Hide
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &317987599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -327,6 +316,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 317987596}
   m_CullTransparentMesh: 1
+--- !u!114 &317987601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317987596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1af1cd6fed3455459c1eebf72bb7c61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleButtonController
+  battleButton: {fileID: 317987598}
+  actionPanel: {fileID: 854116496}
 --- !u!1 &396399761
 GameObject:
   m_ObjectHideFlags: 0
@@ -1338,11 +1341,11 @@ MonoBehaviour:
   rows: 5
   cellSize: 0.55
   cellGap: 0.05
-  gridOrigin: {x: -2.2, y: -4.4}
+  gridOrigin: {x: 0.05, y: -4.4}
   cellPrefab: {fileID: 5594077501902994206, guid: c2de66061974c2c4e87e97e5b84d10cf, type: 3}
   gridContainer: {fileID: 0}
-  normalYPosition: -4.4
-  raisedYPosition: -2.5
+  normalYPosition: -3.2
+  raisedYPosition: -1.2
   moveDuration: 0.3
 --- !u!4 &1596487503
 Transform:

@@ -182,7 +182,12 @@ public class BattleState : IGameState
     {
         Debug.Log("[BattleState] Entering Battle Phase");
         
-        // TODO: Hide Action Panel
+        // Hide Action Panel (backup, Battle button already done this)
+        ActionPanelController panel = GameObject.FindObjectOfType<ActionPanelController>();
+    if (panel != null)
+    {
+        panel.Hide();
+    }
         // TODO: Reset grid/battlezone visual state
         // TODO: Start enemy spawning
         // TODO: Activate all buildings
